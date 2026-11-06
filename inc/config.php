@@ -2,9 +2,9 @@
 
 $sname= "localhost";
 $unmae= "root";
-$password = "Mylove82@@@";
+$password = "";
 
-$db_name = "s2_dhakasoft";
+$db_name = "";
 
 $conn = mysqli_connect($sname, $unmae, $password, $db_name);
 
