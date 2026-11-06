@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Nov 06, 2026 at 08:35 PM
+-- Generation Time: Nov 06, 2026 at 08:55 PM
 -- Server version: 8.4.11-0ubuntu0.26.04.1
 -- PHP Version: 8.5.4
 
@@ -118,10 +118,10 @@ CREATE TABLE `importuser` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `nas`
+-- Table structure for table `nas_old_backup`
 --
 
-CREATE TABLE `nas` (
+CREATE TABLE `nas_old_backup` (
   `id` int NOT NULL,
   `nasname` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
   `shortname` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
@@ -203,12 +203,16 @@ CREATE TABLE `package` (
   `id` int NOT NULL,
   `name` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `profile` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `rate_limit` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `mbill` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `resrat` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `vat` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `packageid` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `sec` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `sec` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `reseller_price` decimal(10,2) NOT NULL DEFAULT '0.00',
+  `vat_percent` decimal(5,2) NOT NULL DEFAULT '0.00'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -263,7 +267,8 @@ CREATE TABLE `pop` (
   `id` int NOT NULL,
   `name` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
   `mikrotik` varchar(200) COLLATE utf8mb4_general_ci NOT NULL,
-  `sec` varchar(20) COLLATE utf8mb4_general_ci NOT NULL
+  `sec` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
+  `router_id` int UNSIGNED DEFAULT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
@@ -303,6 +308,23 @@ CREATE TABLE `ppp_secret` (
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `ppp_sessions`
+--
+
+CREATE TABLE `ppp_sessions` (
+  `id` bigint UNSIGNED NOT NULL,
+  `router_id` int UNSIGNED NOT NULL,
+  `username` varchar(128) COLLATE utf8mb4_general_ci NOT NULL,
+  `ip` varchar(45) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `caller_id` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `started_at` datetime NOT NULL,
+  `last_seen` datetime NOT NULL,
+  `ended_at` datetime DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `profile`
 --
 
@@ -319,186 +341,22 @@ CREATE TABLE `profile` (
 -- --------------------------------------------------------
 
 --
--- Table structure for table `radacct`
+-- Table structure for table `routers`
 --
 
-CREATE TABLE `radacct` (
-  `radacctid` bigint NOT NULL,
-  `acctsessionid` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `acctupdatetime` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
-  `acctuniqueid` varchar(32) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `groupname` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `realm` varchar(64) COLLATE utf8mb4_general_ci DEFAULT '',
-  `nasipaddress` varchar(15) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `nasportid` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nasporttype` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `acctstarttime` datetime DEFAULT NULL,
-  `acctstoptime` datetime DEFAULT NULL,
-  `acctsessiontime` int DEFAULT NULL,
-  `acctauthentic` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `connectinfo_start` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `connectinfo_stop` varchar(50) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `acctinputoctets` bigint DEFAULT NULL,
-  `acctoutputoctets` bigint DEFAULT NULL,
-  `calledstationid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `callingstationid` varchar(50) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `acctterminatecause` varchar(32) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `servicetype` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `framedprotocol` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `framedipaddress` varchar(15) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `acctstartdelay` int DEFAULT NULL,
-  `acctstopdelay` int DEFAULT NULL,
-  `xascendsessionsvrkey` varchar(10) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `framedipv6address` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `framedipv6prefix` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `framedinterfaceid` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `delegatedipv6prefix` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `acctinterval` varchar(200) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radcheck`
---
-
-CREATE TABLE `radcheck` (
+CREATE TABLE `routers` (
   `id` int UNSIGNED NOT NULL,
-  `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `attribute` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `op` char(2) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '==',
-  `value` varchar(253) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `sec` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radgroupcheck`
---
-
-CREATE TABLE `radgroupcheck` (
-  `id` int UNSIGNED NOT NULL,
-  `groupname` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `attribute` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `op` char(2) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '==',
-  `value` varchar(253) COLLATE utf8mb4_general_ci NOT NULL DEFAULT ''
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radgroupreply`
---
-
-CREATE TABLE `radgroupreply` (
-  `id` int UNSIGNED NOT NULL,
-  `groupname` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `attribute` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `op` char(2) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '=',
-  `value` varchar(253) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `packageid` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radhuntgroup`
---
-
-CREATE TABLE `radhuntgroup` (
-  `id` int UNSIGNED NOT NULL,
-  `groupname` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `nasipaddress` varchar(15) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `nasportid` varchar(15) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radippool`
---
-
-CREATE TABLE `radippool` (
-  `id` int UNSIGNED NOT NULL,
-  `pool_name` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
-  `framedipaddress` varchar(15) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `nasipaddress` varchar(15) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `calledstationid` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
-  `callingstationid` varchar(30) COLLATE utf8mb4_general_ci NOT NULL,
-  `expiry_time` datetime DEFAULT NULL,
-  `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `pool_key` varchar(30) COLLATE utf8mb4_general_ci NOT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radpostauth`
---
-
-CREATE TABLE `radpostauth` (
-  `id` int NOT NULL,
-  `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `nasport` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nasname` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `mac` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `pass` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `reply` varchar(32) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `error` varchar(500) COLLATE utf8mb4_general_ci NOT NULL,
-  `authdate` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radreply`
---
-
-CREATE TABLE `radreply` (
-  `id` int UNSIGNED NOT NULL,
-  `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `attribute` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `op` char(2) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '=',
-  `value` varchar(253) COLLATE utf8mb4_general_ci NOT NULL DEFAULT ''
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `radusergroup`
---
-
-CREATE TABLE `radusergroup` (
-  `id` int NOT NULL,
-  `username` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `groupname` varchar(64) COLLATE utf8mb4_general_ci NOT NULL DEFAULT '',
-  `priority` int NOT NULL DEFAULT '1'
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
--- --------------------------------------------------------
-
---
--- Table structure for table `realms`
---
-
-CREATE TABLE `realms` (
-  `id` bigint NOT NULL,
-  `realmname` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `type` varchar(32) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `authhost` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `accthost` varchar(256) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `secret` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `ldflag` varchar(64) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `nostrip` int DEFAULT NULL,
-  `hints` int DEFAULT NULL,
-  `notrealm` int DEFAULT NULL,
-  `creationdate` datetime DEFAULT NULL,
-  `creationby` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL,
-  `updatedate` datetime DEFAULT NULL,
-  `updateby` varchar(128) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `name` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `ip` varchar(45) COLLATE utf8mb4_general_ci NOT NULL,
+  `api_port` smallint UNSIGNED NOT NULL DEFAULT '8728',
+  `use_ssl` tinyint(1) NOT NULL DEFAULT '0',
+  `username` varchar(100) COLLATE utf8mb4_general_ci NOT NULL,
+  `password_enc` varchar(512) COLLATE utf8mb4_general_ci NOT NULL,
+  `sec` varchar(100) COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'main',
+  `status` tinyint(1) NOT NULL DEFAULT '1',
+  `last_seen` datetime DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -546,6 +404,23 @@ CREATE TABLE `sms_temp` (
   `msg_sec` varchar(20) COLLATE utf8mb4_general_ci NOT NULL,
   `sec` varchar(20) COLLATE utf8mb4_general_ci NOT NULL
 ) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sync_jobs`
+--
+
+CREATE TABLE `sync_jobs` (
+  `id` bigint UNSIGNED NOT NULL,
+  `customer_id` int UNSIGNED NOT NULL,
+  `kick` tinyint(1) NOT NULL DEFAULT '0',
+  `status` enum('pending','done','failed') COLLATE utf8mb4_general_ci NOT NULL DEFAULT 'pending',
+  `attempts` int NOT NULL DEFAULT '0',
+  `last_error` varchar(500) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `created_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -667,8 +542,13 @@ CREATE TABLE `userinfo` (
   `onumac` varchar(20) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `sec` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
   `userstatus` varchar(100) COLLATE utf8mb4_general_ci DEFAULT '1',
-  `billstatus` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL
-) ENGINE=MyISAM DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+  `billstatus` varchar(100) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `package_id` int DEFAULT NULL,
+  `router_id` int UNSIGNED DEFAULT NULL,
+  `pppoe_password` varchar(255) COLLATE utf8mb4_general_ci DEFAULT NULL,
+  `expire_at` datetime DEFAULT NULL,
+  `synced_disabled` tinyint DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
 -- Indexes for dumped tables
@@ -699,9 +579,9 @@ ALTER TABLE `importuser`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `nas`
+-- Indexes for table `nas_old_backup`
 --
-ALTER TABLE `nas`
+ALTER TABLE `nas_old_backup`
   ADD PRIMARY KEY (`id`);
 
 --
@@ -714,7 +594,8 @@ ALTER TABLE `operators`
 -- Indexes for table `package`
 --
 ALTER TABLE `package`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_package_sec` (`sec`);
 
 --
 -- Indexes for table `payment`
@@ -729,52 +610,27 @@ ALTER TABLE `payment_type`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `ppp_sessions`
+--
+ALTER TABLE `ppp_sessions`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_sess_open` (`router_id`,`ended_at`,`username`),
+  ADD KEY `idx_sess_user` (`username`,`started_at`),
+  ADD KEY `idx_sess_start` (`started_at`);
+
+--
 -- Indexes for table `profile`
 --
 ALTER TABLE `profile`
   ADD PRIMARY KEY (`id`);
 
 --
--- Indexes for table `radacct`
+-- Indexes for table `routers`
 --
-ALTER TABLE `radacct`
-  ADD PRIMARY KEY (`radacctid`);
-
---
--- Indexes for table `radcheck`
---
-ALTER TABLE `radcheck`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `radgroupcheck`
---
-ALTER TABLE `radgroupcheck`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `radgroupreply`
---
-ALTER TABLE `radgroupreply`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `radpostauth`
---
-ALTER TABLE `radpostauth`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `radreply`
---
-ALTER TABLE `radreply`
-  ADD PRIMARY KEY (`id`);
-
---
--- Indexes for table `radusergroup`
---
-ALTER TABLE `radusergroup`
-  ADD PRIMARY KEY (`id`);
+ALTER TABLE `routers`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_router_ip` (`ip`,`api_port`),
+  ADD KEY `idx_router_sec` (`sec`);
 
 --
 -- Indexes for table `sms`
@@ -795,6 +651,14 @@ ALTER TABLE `sms_temp`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `sync_jobs`
+--
+ALTER TABLE `sync_jobs`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_job_status` (`status`,`id`),
+  ADD KEY `idx_job_customer` (`customer_id`,`status`);
+
+--
 -- Indexes for table `systemevents`
 --
 ALTER TABLE `systemevents`
@@ -810,7 +674,13 @@ ALTER TABLE `userbillinfo`
 -- Indexes for table `userinfo`
 --
 ALTER TABLE `userinfo`
-  ADD PRIMARY KEY (`id`);
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_ui_username` (`username`),
+  ADD KEY `idx_ui_custid` (`custid`),
+  ADD KEY `idx_ui_router` (`router_id`),
+  ADD KEY `idx_ui_package` (`package_id`),
+  ADD KEY `idx_ui_sec` (`sec`),
+  ADD KEY `idx_ui_expire` (`expire_at`);
 
 --
 -- AUTO_INCREMENT for dumped tables
@@ -841,9 +711,9 @@ ALTER TABLE `importuser`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `nas`
+-- AUTO_INCREMENT for table `nas_old_backup`
 --
-ALTER TABLE `nas`
+ALTER TABLE `nas_old_backup`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
@@ -871,52 +741,22 @@ ALTER TABLE `payment_type`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
+-- AUTO_INCREMENT for table `ppp_sessions`
+--
+ALTER TABLE `ppp_sessions`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `profile`
 --
 ALTER TABLE `profile`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
--- AUTO_INCREMENT for table `radacct`
+-- AUTO_INCREMENT for table `routers`
 --
-ALTER TABLE `radacct`
-  MODIFY `radacctid` bigint NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radcheck`
---
-ALTER TABLE `radcheck`
+ALTER TABLE `routers`
   MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radgroupcheck`
---
-ALTER TABLE `radgroupcheck`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radgroupreply`
---
-ALTER TABLE `radgroupreply`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radpostauth`
---
-ALTER TABLE `radpostauth`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radreply`
---
-ALTER TABLE `radreply`
-  MODIFY `id` int UNSIGNED NOT NULL AUTO_INCREMENT;
-
---
--- AUTO_INCREMENT for table `radusergroup`
---
-ALTER TABLE `radusergroup`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `sms`
@@ -935,6 +775,12 @@ ALTER TABLE `sms_gtw`
 --
 ALTER TABLE `sms_temp`
   MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
+-- AUTO_INCREMENT for table `sync_jobs`
+--
+ALTER TABLE `sync_jobs`
+  MODIFY `id` bigint UNSIGNED NOT NULL AUTO_INCREMENT;
 
 --
 -- AUTO_INCREMENT for table `systemevents`
